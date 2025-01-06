@@ -131,17 +131,34 @@ class Database:
         await self.file.delete_one({'_id': ObjectId(_id)})
 
 # ---------------------[ UPDATE FILES ]---------------------#
+    
     async def update_file_ids(self, _id, file_ids: dict):
-    # Ensure file_ids is a dictionary to avoid potential errors
+    # Ensure the provided _id is valid
+        try:
+            object_id = ObjectId(_id)
+        except Exception as e:
+            raise ValueError(f"Invalid _id format: {_id}. Error: {e}")
+
+    # Validate that file_ids is a dictionary
         if not isinstance(file_ids, dict):
             raise ValueError("file_ids must be a dictionary")
 
-    # Update the file in the database with the new file_ids
+    # Check if the document exists in the database
+        existing_file = await self.file.find_one({"_id": object_id})
+        if not existing_file:
+            raise ValueError(f"No document found with _id: {_id}")
+
+    # Perform the update
         result = await self.file.update_one(
-            {"_id": ObjectId(_id)},  # Match the document by its unique ObjectId
-            {"$set": {"file_ids": file_ids}}  # Update or set the 'file_ids' field
+            {"_id": object_id},
+            {"$set": {"file_ids": file_ids}}
         )
-        return result.modified_count
+
+    # Return meaningful feedback
+        if result.modified_count == 0:
+            raise ValueError(f"No updates made. The document may already have the same file_ids.")
+        return f"Document with _id: {_id} successfully updated."
+
 
 # ---------------------[ PAID SYS ]---------------------#
 #     async def link_available(self, id):
