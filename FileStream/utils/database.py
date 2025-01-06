@@ -71,23 +71,11 @@ class Database:
         
 # ---------------------[ ADD FILE TO DB ]---------------------#
     async def add_file(self, file_info):
-    # Ensure 'msg_id' is present
-        msg_id = file_info.get("msg_id")
-        if msg_id is None:
-            raise ValueError("'msg_id' is missing in file_info")
-
-        channel_id = abs(Telegram.FLOG_CHANNEL)
-        string = f"get-{msg_id * channel_id}"
-        base64_string = base64.b64encode(string.encode()).decode()
-
-        file_info["unique_id"] = base64_string
-        file_info["time"] = time.time()
-
-        fetch_old = await self.get_file_by_unique_id(base64_string)
+        fetch_old = await self.get_file_by_fileuniqueid(file_info["file_unique_id"])
         if fetch_old:
             return fetch_old["_id"]
-
         return (await self.file.insert_one(file_info)).inserted_id
+
 
 
 # ---------------------[ FIND FILE IN DB ]---------------------#
