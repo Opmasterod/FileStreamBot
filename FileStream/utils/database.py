@@ -70,7 +70,7 @@ class Database:
         return count
         
 # ---------------------[ ADD FILE TO DB ]---------------------#
-    async def add_file(client, file_info):
+    async def add_file(self, file_info):
     # Ensure 'msg_id' is present
         msg_id = file_info.get("msg_id")
         if msg_id is None:
@@ -83,11 +83,11 @@ class Database:
         file_info["unique_id"] = base64_string
         file_info["time"] = time.time()
 
-        fetch_old = await client.get_file_by_unique_id(base64_string)
+        fetch_old = await self.get_file_by_unique_id(base64_string)
         if fetch_old:
             return fetch_old["_id"]
 
-        return (await client.file.insert_one(file_info)).inserted_id
+        return (await self.file.insert_one(file_info)).inserted_id
 
 
 # ---------------------[ FIND FILE IN DB ]---------------------#
