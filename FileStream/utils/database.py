@@ -124,7 +124,16 @@ class Database:
 
 # ---------------------[ UPDATE FILES ]---------------------#
     async def update_file_ids(self, _id, file_ids: dict):
-        await self.file.update_one({"_id": ObjectId(_id)}, {"$set": {"file_ids": file_ids}})
+    # Ensure file_ids is a dictionary to avoid potential errors
+        if not isinstance(file_ids, dict):
+            raise ValueError("file_ids must be a dictionary")
+
+    # Update the file in the database with the new file_ids
+        result = await self.file.update_one(
+            {"_id": ObjectId(_id)},  # Match the document by its unique ObjectId
+            {"$set": {"file_ids": file_ids}}  # Update or set the 'file_ids' field
+        )
+        return result.modified_count
 
 # ---------------------[ PAID SYS ]---------------------#
 #     async def link_available(self, id):
