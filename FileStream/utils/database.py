@@ -70,8 +70,7 @@ class Database:
         return count
         
 # ---------------------[ ADD FILE TO DB ]---------------------#
-    async def add_file(client, file_info):
-        client = self
+    async def add_file(self, file_info):
         channel_id = abs(Telegram.FLOG_CHANNEL)
         msg_id = file_info["msg_id"]
         string = f"get-{msg_id * channel_id}"
@@ -80,7 +79,7 @@ class Database:
         file_info["time"] = time.time()  # Current timestamp
         file_info["file_name"] = file_info.get("file_name", "Unknown")  # Default if not provided
         file_info["file_size"] = file_info.get("file_size", "Unknown")  # Default if not provided
-        fetch_old = await client.get_file_by_unique_id(base64_string)
+        fetch_old = await self.get_file_by_unique_id(base64_string)
 
         if fetch_old:
             return fetch_old["_id"]
