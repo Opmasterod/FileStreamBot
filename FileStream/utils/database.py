@@ -1,9 +1,12 @@
 import pymongo
 import time
+import base64
 import motor.motor_asyncio
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
 from FileStream.server.exceptions import FIleNotFound
+from FileStream.config import Telegram
+
 
 class Database:
     def __init__(self, uri, database_name):
@@ -67,12 +70,20 @@ class Database:
         return count
         
 # ---------------------[ ADD FILE TO DB ]---------------------#
-    async def add_file(self, file_info):
-        file_info["time"] = time.time()
-        fetch_old = await self.get_file_by_fileuniqueid(file_info["user_id"], file_info["file_unique_id"])
+    async def add_file(client, file_info):
+        client = self
+        channel_id = abs(Telegram.FLOG_CHANNEL)
+        msg_id = file_info["msg_id"]
+        string = f"get-{msg_id * channel_id}"
+        base64_string = base64.b64encode(string.encode()).decode()
+        file_info["unique_id"] = base64_string
+        file_info["time"] = time.time()  # Current timestamp
+        file_info["file_name"] = file_info.get("file_name", "Unknown")  # Default if not provided
+        file_info["file_size"] = file_info.get("file_size", "Unknown")  # Default if not provided
+        fetch_old = await client.get_file_by_unique_id(base64_string)
+
         if fetch_old:
             return fetch_old["_id"]
-        await self.count_links(file_info["user_id"], "+")
         return (await self.file.insert_one(file_info)).inserted_id
 
 # ---------------------[ FIND FILE IN DB ]---------------------#
