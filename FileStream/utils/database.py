@@ -78,11 +78,19 @@ class Database:
         fetch_old = await self.get_file_by_fileuniqueid(
             file_info["file_unique_id"], file_info["flog_channel"]
         )
+
+    # If the file exists, check if the 'file_name' exists before using it
         if fetch_old:
+            file_name = fetch_old.get("file_name", None)  # Safely get 'file_name'
+            if not file_name:
+            # Handle the case where file_name doesn't exist
+            # You could set a default name or skip processing
+                file_name = "default_name"  # Or whatever you prefer
             return fetch_old["_id"]
 
-    # Insert the file info into the database
+        # Insert the file info into the database
         return (await self.file.insert_one(file_info)).inserted_id
+
 
 
 # ---------------------[ FIND FILE IN DB ]---------------------#
