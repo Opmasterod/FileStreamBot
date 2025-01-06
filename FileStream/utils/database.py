@@ -71,11 +71,18 @@ class Database:
         
 # ---------------------[ ADD FILE TO DB ]---------------------#
     async def add_file(self, file_info):
-        fetch_old = await self.get_file_by_fileuniqueid(file_info["file_unique_id"])
+    # Add FLOG_CHANNEL from config to the file info
+        file_info["flog_channel"] = Telegram.FLOG_CHANNEL
+
+    # Check if a file with the same unique ID and FLOG_CHANNEL already exists
+        fetch_old = await self.get_file_by_fileuniqueid(
+            file_info["file_unique_id"], file_info["flog_channel"]
+        )
         if fetch_old:
             return fetch_old["_id"]
-        return (await self.file.insert_one(file_info)).inserted_id
 
+    # Insert the file info into the database
+        return (await self.file.insert_one(file_info)).inserted_id
 
 
 # ---------------------[ FIND FILE IN DB ]---------------------#
